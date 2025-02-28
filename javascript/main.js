@@ -12,7 +12,13 @@ async function main() {
 
   console.log(results.imageData.positions.length)
 
+  glManager.createBuffers(results.imageData.positions.length)
+
+  glManager.setStartPositions(results.imageData)
+  glManager.setEndPositions(results.imageData)
   glManager.StopWaitingAnime();
+
+  glManager.drawStartBuffer();
 
   //now we will finalize buffers and start the main webgl drawing loop.
  

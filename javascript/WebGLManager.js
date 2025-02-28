@@ -4,6 +4,8 @@ import { WaitingAnimation } from './WaitingAnimation.js';
 export class WebGLManager {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
     this.gl = this.canvas.getContext('webgl');
     if (!this.gl) {
       alert('WebGL not supported');
@@ -50,17 +52,56 @@ export class WebGLManager {
   }
 
   // Method: Set Start Positions
-  setStartPositions(positionsArray) {
-    if (positionsArray.length !== this.bufferSize * 2) {
-      console.error('Invalid Start Positions Array Length');
+  setStartPositions(results) {
+    if (!results || !results.positions || !results.width || !results.height) {
+      console.error('Invalid Results Object');
       return;
     }
-
+  
+    this.bufferSize = results.positions/2;
+    // Extract Data from Results
+    const { positions, width, height } = results;
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+    
+  
+    // Calculate Scale Factor to Fit Height
+    const scale = 2 * canvasHeight / height;
+    console.log('image',width,height);
+    console.log('cavas',canvasWidth,canvasHeight);
+    console.log('image reciezed',width*scale,height*scale)
+    const scaledWidth = width * scale;
+    const offsetX = width * scale  / (2.0*canvasWidth);
+  
+    // Adjusted Positions Array
+    const adjustedPositions = [];
+  
+    // Resize and Normalize Coordinates
+    for (let i = 0; i < positions.length; i += 2) {
+      const x = positions[i];
+      const y = positions[i + 1];
+  
+      // Scale Coordinates
+      const scaledX = x * scale / canvasWidth;
+      const scaledY = y * scale / canvasHeight;
+      //console.log(x,y,scaledX,scaledY)
+  
+      // Normalize to WebGL Coordinates
+      const normX = scaledX - offsetX;
+      const normY = 1 - scaledY;
+  
+      // Center the Image
+      const centeredX = normX + ((canvasWidth - scaledWidth) / canvasWidth);
+  
+      adjustedPositions.push(normX, normY);
+    }
+  
     // Deep Copy to Prevent Corruption
-    this.startPositions = [...positionsArray];
+    this.startPositions = [...adjustedPositions];
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.startPosBuffer);
     this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array(this.startPositions));
   }
+  
 
   // Method: Set End Positions
   setEndPositions(positionsArray) {
@@ -80,11 +121,18 @@ export class WebGLManager {
       attribute vec2 a_startPos;
       attribute vec2 a_endPos;
       uniform float u_time;
+      uniform int u_drawMode;
       varying vec2 v_currentPos;
-
+      
       void main() {
-        v_currentPos = mix(a_startPos, a_endPos, u_time);
-        gl_PointSize = 2.0;
+        if (u_drawMode == 0) {
+          // Draw Start Positions
+          v_currentPos = a_startPos;
+        } else {
+          // Draw Interpolated Positions (Animation)
+          v_currentPos = mix(a_startPos, a_endPos, u_time);
+        }
+        gl_PointSize = 1.0;
         gl_Position = vec4(v_currentPos, 0.0, 1.0);
       }
     `;
@@ -121,5 +169,28 @@ export class WebGLManager {
     }
 
     return shader;
+  }
+
+  drawStartBuffer() {
+    if (this.startPositions.length === 0) {
+      console.error('Start Positions Buffer is Empty');
+      return;
+    }
+  
+    this.gl.useProgram(this.program);
+  
+    // Set Draw Mode to 0 (Draw Start Positions)
+    const drawModeLocation = this.gl.getUniformLocation(this.program, 'u_drawMode');
+    this.gl.uniform1i(drawModeLocation, 0);
+  
+    // Bind Start Position Buffer
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.startPosBuffer);
+    const startPosLocation = this.gl.getAttribLocation(this.program, 'a_startPos');
+    this.gl.enableVertexAttribArray(startPosLocation);
+    this.gl.vertexAttribPointer(startPosLocation, 2, this.gl.FLOAT, false, 0, 0);
+  
+    // Clear Canvas and Draw Points
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    this.gl.drawArrays(this.gl.POINTS, 0, this.startPositions.length / 2);
   }
 }
