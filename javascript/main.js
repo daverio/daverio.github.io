@@ -7,18 +7,11 @@ async function main() {
   const glManager = new WebGLManager('webgl-canvas');
 
   glManager.StartWaitingAnime();
-
-  const results = await waitForPrecomputations();
-
-  console.log(results.imageData.positions.length)
-
-  glManager.createBuffers(results.imageData.positions.length)
-
-  glManager.setStartPositions(results.imageData)
-  glManager.setEndPositions(results.imageData)
+  const data = await waitForPrecomputations();
+  glManager.createBuffers(data)
   glManager.StopWaitingAnime();
-
-  glManager.drawStartBuffer();
+  glManager.drawCurrent();
+  //glManager.startVisual();
 
   //now we will finalize buffers and start the main webgl drawing loop.
  

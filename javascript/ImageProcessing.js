@@ -1,6 +1,6 @@
 // Load an Image Asynchronously
 // Async Function: Extract White Pixels
-export async function extractWhitePixelsAsync(imagePath, results) {
+export async function extractWhitePixelsAsync(imagePath, frameData,datasetName,dataMeta = null) {
     console.log('Starting White Pixel Extraction...');
   
     // Load Image
@@ -10,9 +10,19 @@ export async function extractWhitePixelsAsync(imagePath, results) {
     const data = extractWhitePixelsHelper(image);
   
     // Store Result
-    results.positions = data.positions;
-    results.width = data.width;
-    results.height = data.height;
+    frameData[datasetName] = data.positions;
+    if(dataMeta != null) {
+        dataMeta.width = data.width;
+        dataMeta.height = data.height;
+        dataMeta.numPixels = data.positions.length / 2;
+    }
+    else {
+        if(dataMeta.width != data.width || dataMeta.height != data.height){
+            //in the future, instead of throwing, we should transform the point coordinate here.
+            const errorMessage = 'extractWhitePixelsAsync: Image has wrong dimensions!';
+            throw new Error(errorMessage)
+        }
+    }
   
     console.log('White Pixel Extraction Completed!');
 }
