@@ -1,0 +1,34 @@
+{
+    "base_path":"pages/",
+    "width": 2244,
+    "height": 1535,
+    "pages":{
+        "pictureme":{
+            "source":"pictureme.png",
+            "links":{}
+        },
+        "homepage":{
+            "source":"homepage.png",
+            "links":{
+                "aboutme":{
+                    "posx": 0,
+                    "posy": 0,
+                    "width": 10,
+                    "height":10
+                }
+            }
+        },
+        "aboutme":{
+            "source":"aboutme.png",
+            "links":{
+                "homepage":{
+                    "posx": 0,
+                    "posy": 0,
+                    "width": 10,
+                    "height":10
+                }
+            }
+        }
+
+    }
+}
