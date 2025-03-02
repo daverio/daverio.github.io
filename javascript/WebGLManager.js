@@ -15,6 +15,10 @@ export class WebGLManager {
     window.addEventListener('resize', () => this.resizeCanvas());
     this.waitingAnimation = new WaitingAnimation(this.gl);
     this.createPrograms();
+
+    //we need a way to know on which page we are currently
+    // and if we are in transition
+    // and if the area to be clicked should be 'on' or not
   }
 
   StartWaitingAnime() {

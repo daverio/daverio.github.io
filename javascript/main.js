@@ -16,11 +16,18 @@ async function main() {
   glManager.StopWaitingAnime();
   glManager.drawCurrent();
 
-  glManager.startAnime(2,'mainPicture');
-  await wait(3000);
-  glManager.stopAnime()
-  await wait(20)
-  glManager.startAnime(2,'homepage');
+  glManager.startAnime(2,'pictureme');
+  await wait(2000);
+  glManager.stopAnime();
+  await wait(1000);
+  glManager.startAnime(1,'homepage');
+  await wait(2000);
+  glManager.stopAnime();
+  await wait(20);
+  glManager.startAnime(1,'aboutme');
+  glManager.stopAnime();
+
+
   //await wait(3000);
   //glManager.startAnime(2,'homepage');
   //glManager.startVisual();

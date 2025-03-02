@@ -13,41 +13,21 @@ export async function createRandomPixelsAsync(frameData,datasetName,dataMeta) {
     }
 }
 
-export async function extractWhitePixelsAsync(imagePath, frameData,datasetName,dataMeta) {
+export async function extractWhitePixelsAsync(pagename,data) {
     console.log('Starting White Pixel Extraction...');
   
-    // Load Image
-    const image = await loadImage(imagePath);
-  
-    // Extract White Pixels
-    const data = extractWhitePixelsHelper(image);
+    const image = await loadImage(data.meta.base_path + data.meta.pages[pagename].source);
+    const imagedata = extractWhitePixelsHelper(image);
   
     // Store Result
-    frameData[datasetName] = data.positions;
-    if(!dataMeta.width) {
-        dataMeta.width = data.width;
-        dataMeta.height = data.height;
-        dataMeta.numPixels = data.positions.length / 2;
-    }
-    else {
-        if(dataMeta.width != data.width || dataMeta.height != data.height){
+    data.frames[pagename] = imagedata.positions;
+    if(data.meta.width != imagedata.width || data.meta.height != imagedata.height){
             //in the future, instead of throwing, we should transform the point coordinate here.
-            const errorMessage = 'extractWhitePixelsAsync: Image has wrong dimensions!';
-            throw new Error(errorMessage)
-        }
-        if(dataMeta.numPixels*2 < frameData[datasetName].length) {
-            console.log('Too many pixels',dataMeta.numPixels,frameData[datasetName].length)
-        }
-        else if (dataMeta.numPixels*2 > frameData[datasetName].length) {
-            const numMiss = dataMeta.numPixels - frameData[datasetName].length/2;
-            console.log('Not enough pixels',dataMeta.numPixels,frameData[datasetName].length/2, numMiss)
-            for (let i = 0; i < numMiss; i++){
-                frameData[datasetName].push(frameData[datasetName][2*i],frameData[datasetName][2*i+1])
-            }
-            console.log('Not enough pixels solved',dataMeta.numPixels,frameData[datasetName].length/2)
-        }
+        const errorMessage = 'extractWhitePixelsAsync: Image has wrong dimensions!';
+        console.log(errorMessage);
+        throw new Error(errorMessage);
     }
-  
+
     console.log('White Pixel Extraction Completed!');
 }
 
