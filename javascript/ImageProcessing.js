@@ -1,6 +1,19 @@
 // Load an Image Asynchronously
 // Async Function: Extract White Pixels
-export async function extractWhitePixelsAsync(imagePath, frameData,datasetName,dataMeta = null) {
+
+
+export async function createRandomPixelsAsync(frameData,datasetName,dataMeta) {
+    
+    frameData[datasetName] = []
+    console.log(dataMeta.numPixels,dataMeta.width,dataMeta.height)
+    for (let i = 0; i < dataMeta.numPixels; i++) {
+        const randomX = Math.random() * dataMeta.width * 4 - dataMeta.width*2;  // Random between -1 and 1
+        const randomY = Math.random() * dataMeta.height * 4 - dataMeta.height*2;  // Random between -1 and 1
+        frameData[datasetName].push(randomX, randomY);
+    }
+}
+
+export async function extractWhitePixelsAsync(imagePath, frameData,datasetName,dataMeta) {
     console.log('Starting White Pixel Extraction...');
   
     // Load Image
@@ -11,7 +24,7 @@ export async function extractWhitePixelsAsync(imagePath, frameData,datasetName,d
   
     // Store Result
     frameData[datasetName] = data.positions;
-    if(dataMeta != null) {
+    if(!dataMeta.width) {
         dataMeta.width = data.width;
         dataMeta.height = data.height;
         dataMeta.numPixels = data.positions.length / 2;
@@ -21,6 +34,17 @@ export async function extractWhitePixelsAsync(imagePath, frameData,datasetName,d
             //in the future, instead of throwing, we should transform the point coordinate here.
             const errorMessage = 'extractWhitePixelsAsync: Image has wrong dimensions!';
             throw new Error(errorMessage)
+        }
+        if(dataMeta.numPixels*2 < frameData[datasetName].length) {
+            console.log('Too many pixels',dataMeta.numPixels,frameData[datasetName].length)
+        }
+        else if (dataMeta.numPixels*2 > frameData[datasetName].length) {
+            const numMiss = dataMeta.numPixels - frameData[datasetName].length/2;
+            console.log('Not enough pixels',dataMeta.numPixels,frameData[datasetName].length/2, numMiss)
+            for (let i = 0; i < numMiss; i++){
+                frameData[datasetName].push(frameData[datasetName][2*i],frameData[datasetName][2*i+1])
+            }
+            console.log('Not enough pixels solved',dataMeta.numPixels,frameData[datasetName].length/2)
         }
     }
   

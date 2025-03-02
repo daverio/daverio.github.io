@@ -27,7 +27,7 @@ export class WebGLManager {
 
   //Create Buffers from the data, all buffers have same size 
   // as they represent the list of white pixel which move around
-  createBuffers(data) {
+  createBuffers(data,startBuffer) {
     this.dataSources = data;
     const numPixels = this.dataSources.meta.numPixels;
     if (numPixels <= 0) {
@@ -54,6 +54,7 @@ export class WebGLManager {
         console.error(errorMessage);
         throw new Error(errorMessage);
       }
+      console.log(key)
       console.log('frame: ',frame);
       this.buffers[key] = this.gl.createBuffer();
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[key]);
@@ -64,58 +65,17 @@ export class WebGLManager {
     //we can now update the current buffer to become the mainPicture
     // Copy Data from sourceBuffer → destinationBuffer
 
-    this.currentBufferName = 'mainPicture';
-
-    this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, this.buffers[this.currentBufferName]);
+    this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, this.buffers[startBuffer]);
     this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, this.buffers.current);
     this.gl.copyBufferSubData(this.gl.COPY_READ_BUFFER, this.gl.COPY_WRITE_BUFFER, 0, 0, numPixels*2*Float32Array.BYTES_PER_ELEMENT);
     this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, null);
     this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, null);
 
-    
-
   }
 
-  //// Method: Set Start Positions
-  //setStartPositions(results) {
-  //  if (!results || !results.positions || !results.width || !results.height) {
-  //    console.error('Invalid Results Object');
-  //    return;
-  //  }
-  //
-  //  //this.bufferSize = results.positions/2;
-  //  // Extract Data from Results
-  //  const { positions, width, height } = results;
-  //  const canvasWidth = this.canvas.width;
-  //  const canvasHeight = this.canvas.height;
-  //  
-  //
-  //  // Calculate Scale Factor to Fit Height
-  //  const scale = 2 * canvasHeight / height;
-  //  console.log('image',width,height);
-  //  console.log('cavas',canvasWidth,canvasHeight);
-  //  console.log('image reciezed',width*scale,height*scale)
-  //  const scaledWidth = width * scale;
-  //  const offsetX = width * scale  / (2.0*canvasWidth);
-//
-  //  // Adjusted Positions Array
-  //  const adjustedPositions = [];
-//
-  //  // Resize and Normalize Coordinates
-  //  for (let i = 0; i < positions.length; i += 2) {
-  //    positions[i] = positions[i] * scale / canvasWidth - offsetX;
-  //    positions[i+1] = 1 - positions[i+1] * scale / canvasHeight;
-  //  }
-  //
-  //  // Deep Copy to Prevent Corruption
-  //  this.startPositions = [...positions];
-  //  this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.startPosBuffer);
-  //  this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array(this.startPositions));
-  //}
-  
   createPrograms() {
-    const vertexShaderPlotImageSource = `
-    attribute vec2 a_data;
+    const vertexShaderPlotImageSource = `#version 300 es
+    in vec2 a_data;
     uniform vec2 u_scale;
     uniform vec2 u_offset;
     void main() {
@@ -125,74 +85,82 @@ export class WebGLManager {
     }
     `;
 
-    const fragmentShaderPixelsSource = `
+    const vertexShaderAnimeSource = `#version 300 es
+    in vec2 a_dataStart;
+    in vec2 a_dataTarget;
+    uniform vec2 u_scale;
+    uniform vec2 u_offset;
+    uniform float u_mixFactor;
+    out vec2 v_output;
+
+    void main() {
+      vec2 mixedPos = mix(a_dataStart, a_dataTarget, u_mixFactor);
+      v_output = mixedPos;
+      vec2 transformedPos = mixedPos * u_scale + u_offset;
+      gl_PointSize = 1.0;
+      gl_Position = vec4(transformedPos, 0.0, 1.0);
+    }
+    `;
+
+    const fragmentShaderPixelsSource = `#version 300 es
       precision mediump float;
+      out vec4 fragColor;
+
       void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        fragColor = vec4(1.0, 1.0, 1.0, 1.0);
       }
     `;
 
     const vertexShaderPlotImage = this.createShader(this.gl.VERTEX_SHADER, vertexShaderPlotImageSource);
+    const vertexShaderAnime = this.createShader(this.gl.VERTEX_SHADER, vertexShaderAnimeSource);
     const fragmentShaderPixels = this.createShader(this.gl.FRAGMENT_SHADER, fragmentShaderPixelsSource);
 
     this.progPlotImage = this.gl.createProgram();
     this.gl.attachShader(this.progPlotImage, vertexShaderPlotImage);
     this.gl.attachShader(this.progPlotImage, fragmentShaderPixels);
     this.gl.linkProgram(this.progPlotImage);
-
     if (!this.gl.getProgramParameter(this.progPlotImage, this.gl.LINK_STATUS)) {
       console.error('Program Link Error:', this.gl.getProgramInfoLog(this.progPlotImage));
     }
+
+    this.progAnime = this.gl.createProgram();
+    this.gl.attachShader(this.progAnime, vertexShaderAnime);
+    this.gl.attachShader(this.progAnime, fragmentShaderPixels);
+    this.gl.transformFeedbackVaryings(this.progAnime, ["v_output"], this.gl.SEPARATE_ATTRIBS);
+    this.gl.linkProgram(this.progAnime);
+    if (!this.gl.getProgramParameter(this.progAnime, this.gl.LINK_STATUS)) {
+      console.error('Program Link Error:', this.gl.getProgramInfoLog(this.progAnime));
+    }
   }
 
-  drawCurrent() {
-    //const { positions, width, height } = results;
-    //const canvasWidth = this.canvas.width;
-    //const canvasHeight = this.canvas.height;
-    //
-    //
-    //// Calculate Scale Factor to Fit Height
-    //const scale = 2 * canvasHeight / height;
-    //console.log('image',width,height);
-    //console.log('cavas',canvasWidth,canvasHeight);
-    //console.log('image reciezed',width*scale,height*scale)
-    //const scaledWidth = width * scale;
-    ////const offsetX = width * scale  / (2.0*canvasWidth);
-    //
-    //// Adjusted Positions Array
-    //const adjustedPositions = [];
-    //
-    //// Resize and Normalize Coordinates
-    //for (let i = 0; i < positions.length; i += 2) {
-    //  positions[i] = positions[i] * scale / canvasWidth - offsetX;
-    //  positions[i+1] = 1 - positions[i+1] * scale / canvasHeight;
-    //}
+
+
+
+  computeCoordTransform() {
     const canvasWidth = this.canvas.width;
     const canvasHeight = this.canvas.height;
     const width = this.dataSources.meta.width;
     const height = this.dataSources.meta.height;
-
-    console.log('source size: ',width,height);
-    console.log('canvas size: ',canvasWidth,canvasHeight);
-
     const scaleX = 2.0 * canvasHeight / (height * canvasWidth);
     const scaleY = - 2.0 / height;
     const offsetX = - width * canvasHeight / (height * canvasWidth);
     const offsetY = 1.0;
+    return {
+      scaleX: scaleX,
+      scaleY: scaleY,
+      offsetX: offsetX,
+      offsetY: offsetY
+    }
+  }
 
-    console.log(scaleX,scaleY,offsetX,offsetY);
-
+  drawCurrent() {
     this.gl.useProgram(this.progPlotImage);
-    console.log(this.dataSources.frames.mainPicture)
-    console.log(this.buffers.mainPicture);
-
+    
+    const transform = this.computeCoordTransform();
     const u_scaleLocation = this.gl.getUniformLocation(this.progPlotImage, 'u_scale');
     const u_offsetLocation = this.gl.getUniformLocation(this.progPlotImage, 'u_offset');
-    console.log('u_scaleLocation', u_scaleLocation)
-    console.log('u_scaleLocation', u_scaleLocation)
-
-    this.gl.uniform2f(u_scaleLocation, scaleX, scaleY);
-    this.gl.uniform2f(u_offsetLocation, offsetX, offsetY);
+    this.gl.uniform2f(u_scaleLocation, transform.scaleX, transform.scaleY);
+    this.gl.uniform2f(u_offsetLocation, transform.offsetX, transform.offsetY);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.current);
     const dataLocation = this.gl.getAttribLocation(this.progPlotImage, 'a_data');
@@ -205,46 +173,67 @@ export class WebGLManager {
     this.gl.drawArrays(this.gl.POINTS, 0, this.dataSources.meta.numPixels);
   }
 
-  //createShaders() {
-  //  const vertexShaderSource = `
-  //    attribute vec2 a_startPos;
-  //    attribute vec2 a_endPos;
-  //    uniform float u_time;
-  //    uniform int u_drawMode;
-  //    varying vec2 v_currentPos;
-  //    
-  //    void main() {
-  //      if (u_drawMode == 0) {
-  //        // Draw Start Positions
-  //        v_currentPos = a_startPos;
-  //      } else {
-  //        // Draw Interpolated Positions (Animation)
-  //        v_currentPos = mix(a_startPos, a_endPos, u_time);
-  //      }
-  //      gl_PointSize = 1.0;
-  //      gl_Position = vec4(v_currentPos, 0.0, 1.0);
-  //    }
-  //  `;
-//
-  //  const fragmentShaderSource = `
-  //    precision mediump float;
-  //    void main() {
-  //      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-  //    }
-  //  `;
-//
-  //  const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexShaderSource);
-  //  const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentShaderSource);
-//
-  //  this.program = this.gl.createProgram();
-  //  this.gl.attachShader(this.program, vertexShader);
-  //  this.gl.attachShader(this.program, fragmentShader);
-  //  this.gl.linkProgram(this.program);
-//
-  //  if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
-  //    console.error('Program Link Error:', this.gl.getProgramInfoLog(this.program));
-  //  }
-  //}
+  startAnime(duration,targetBuffer){
+    this.isAnimating = true;
+    
+    //copy the current buffer to the start buffer
+    this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, this.buffers.current);
+    this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, this.buffers.start);
+    this.gl.copyBufferSubData(this.gl.COPY_READ_BUFFER, this.gl.COPY_WRITE_BUFFER, 0, 0, this.dataSources.meta.numPixels*2*Float32Array.BYTES_PER_ELEMENT);
+    this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, null);
+    this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, null);
+
+    const startTime = performance.now();
+    
+    const draw = () => {
+      if (!this.isAnimating) return;
+      const elapsed = (performance.now() - startTime) / 1000;
+      //if(elapsed > duration) return;
+      
+      this.gl.useProgram(this.progAnime);
+      
+      const t = Math.min(Math.abs(1 - Math.pow(1 - (elapsed / duration), 3)),1);
+      const transform = this.computeCoordTransform();
+      const u_mixFactorLoc = this.gl.getUniformLocation(this.progAnime, "u_mixFactor");
+      const u_scaleLocation = this.gl.getUniformLocation(this.progAnime, 'u_scale');
+      const u_offsetLocation = this.gl.getUniformLocation(this.progAnime, 'u_offset');
+      this.gl.uniform1f(u_mixFactorLoc,t);
+      this.gl.uniform2f(u_scaleLocation, transform.scaleX, transform.scaleY);
+      this.gl.uniform2f(u_offsetLocation, transform.offsetX, transform.offsetY);
+      
+      
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.start);
+      const locationStart = this.gl.getAttribLocation(this.progAnime, "a_dataStart");
+      this.gl.enableVertexAttribArray(locationStart);
+      this.gl.vertexAttribPointer(locationStart, 2, this.gl.FLOAT, false, 0, 0);
+      
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[targetBuffer]);
+      const locationTarget = this.gl.getAttribLocation(this.progAnime, "a_dataTarget");
+      this.gl.enableVertexAttribArray(locationTarget);
+      this.gl.vertexAttribPointer(locationTarget, 2, this.gl.FLOAT, false, 0, 0);
+      
+      this.gl.bindBufferBase(this.gl.TRANSFORM_FEEDBACK_BUFFER, 0, this.buffers.current);
+      //const locationOutput = this.gl.getAttribLocation(this.progAnime, "v_output");
+      //this.gl.enableVertexAttribArray(locationOutput);
+      //this.gl.vertexAttribPointer(locationOutput, 2, this.gl.FLOAT, false, 0, 0);
+
+      this.gl.beginTransformFeedback(this.gl.POINTS);
+      this.gl.drawArrays(this.gl.POINTS, 0, this.dataSources.meta.numPixels);
+      this.gl.endTransformFeedback();
+
+      this.gl.bindBufferBase(this.gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
+
+      //this.drawCurrent();
+
+      requestAnimationFrame(draw);
+    }
+  
+    draw();
+  }
+
+  stopAnime(){
+    this.isAnimating = false;
+  }
 
   createShader(type, source) {
     const shader = this.gl.createShader(type);
@@ -260,29 +249,7 @@ export class WebGLManager {
     return shader;
   }
 
-  //drawStartBuffer() {
-  //  if (this.startPositions.length === 0) {
-  //    console.error('Start Positions Buffer is Empty');
-  //    return;
-  //  }
-  //
-  //  this.gl.useProgram(this.program);
-  //
-  //  // Set Draw Mode to 0 (Draw Start Positions)
-  //  const drawModeLocation = this.gl.getUniformLocation(this.program, 'u_drawMode');
-  //  this.gl.uniform1i(drawModeLocation, 0);
-  //
-  //  // Bind Start Position Buffer
-  //  this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.startPosBuffer);
-  //  const startPosLocation = this.gl.getAttribLocation(this.program, 'a_startPos');
-  //  this.gl.enableVertexAttribArray(startPosLocation);
-  //  this.gl.vertexAttribPointer(startPosLocation, 2, this.gl.FLOAT, false, 0, 0);
-  //
-  //  // Clear Canvas and Draw Points
-  //  this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-  //  this.gl.drawArrays(this.gl.POINTS, 0, this.startPositions.length / 2);
-  //}
-  // Method: Resize Canvas and Update WebGL Viewport
+
   resizeCanvas(flag=true) {
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
