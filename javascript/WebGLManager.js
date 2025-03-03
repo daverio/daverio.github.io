@@ -13,8 +13,11 @@ export class WebGLManager {
     // Listen for Window Resize
     this.dataSources = null;
     window.addEventListener('resize', () => this.resizeCanvas());
+    this.canvas.addEventListener('click', (event) => this.onClick(event))
     this.waitingAnimation = new WaitingAnimation(this.gl);
     this.createPrograms();
+    this.currentPage = null;
+    this.activeButton = false;
 
     //we need a way to know on which page we are currently
     // and if we are in transition
@@ -140,27 +143,12 @@ export class WebGLManager {
 
 
 
-  computeCoordTransform() {
-    const canvasWidth = this.canvas.width;
-    const canvasHeight = this.canvas.height;
-    const width = this.dataSources.meta.width;
-    const height = this.dataSources.meta.height;
-    const scaleX = 2.0 * canvasHeight / (height * canvasWidth);
-    const scaleY = - 2.0 / height;
-    const offsetX = - width * canvasHeight / (height * canvasWidth);
-    const offsetY = 1.0;
-    return {
-      scaleX: scaleX,
-      scaleY: scaleY,
-      offsetX: offsetX,
-      offsetY: offsetY
-    }
-  }
+
 
   drawCurrent() {
     this.gl.useProgram(this.progPlotImage);
     
-    const transform = this.computeCoordTransform();
+    const transform = this.computeCoordTransformToGL();
     const u_scaleLocation = this.gl.getUniformLocation(this.progPlotImage, 'u_scale');
     const u_offsetLocation = this.gl.getUniformLocation(this.progPlotImage, 'u_offset');
     this.gl.uniform2f(u_scaleLocation, transform.scaleX, transform.scaleY);
@@ -177,7 +165,7 @@ export class WebGLManager {
     this.gl.drawArrays(this.gl.POINTS, 0, this.dataSources.meta.numPixels);
   }
 
-  startAnime(duration,targetBuffer){
+  async startAnime(duration,targetBuffer){
     this.isAnimating = true;
     
     //copy the current buffer to the start buffer
@@ -191,13 +179,16 @@ export class WebGLManager {
     
     const draw = () => {
       if (!this.isAnimating) return;
-      const elapsed = (performance.now() - startTime) / 1000;
+      
+      const elapsed = (performance.now() - startTime);
       //if(elapsed > duration) return;
       
       this.gl.useProgram(this.progAnime);
       
       const t = Math.min(Math.abs(1 - Math.pow(1 - (elapsed / duration), 3)),1);
-      const transform = this.computeCoordTransform();
+      if(t === 1)this.isAnimating = false;
+
+      const transform = this.computeCoordTransformToGL();
       const u_mixFactorLoc = this.gl.getUniformLocation(this.progAnime, "u_mixFactor");
       const u_scaleLocation = this.gl.getUniformLocation(this.progAnime, 'u_scale');
       const u_offsetLocation = this.gl.getUniformLocation(this.progAnime, 'u_offset');
@@ -237,6 +228,63 @@ export class WebGLManager {
 
   stopAnime(){
     this.isAnimating = false;
+  }
+
+  wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+
+
+  async gotoPage(duration,page){
+    this.activeButton = false;
+    this.startAnime(duration,page);
+    await this.wait(duration+50);
+    this.currentPage = page;
+    this.activeButton = true;
+  }
+  computeCoordTransformToGL() {
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+    const width = this.dataSources.meta.width;
+    const height = this.dataSources.meta.height;
+    const scaleX = 2.0 * canvasHeight / (height * canvasWidth);
+    const scaleY = - 2.0 / height;
+    const offsetX = - width * canvasHeight / (height * canvasWidth);
+    const offsetY = 1.0;
+    return {
+      scaleX: scaleX,
+      scaleY: scaleY,
+      offsetX: offsetX,
+      offsetY: offsetY
+    }
+  }
+
+  coordTransformFromCanvas(mouseX,mouseY,canvasRect){
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+    const width = this.dataSources.meta.width;
+    const height = this.dataSources.meta.height;
+    const scale = height/canvasHeight;
+    const x = ((mouseX-canvasRect.left)-(canvasWidth/2.0))*scale + width/2.0;
+    const y = (mouseY-canvasRect.top)*scale;
+    return [x,y];
+  }
+
+  onClick(event){
+    if(this.activeButton)
+    {
+      const rect = this.canvas.getBoundingClientRect();
+      const [x,y] = this.coordTransformFromCanvas(event.clientX,event.clientY,rect);
+      console.log(x,y)
+      Object.entries(this.dataSources.meta.pages[this.currentPage].links).forEach(([target,rect]) => {
+        if( x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.botom)
+        {
+          console.log(target)
+          this.gotoPage(1000,target)
+        }
+      });
+    }
   }
 
   createShader(type, source) {

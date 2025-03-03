@@ -11,10 +11,10 @@
             "source":"homepage.png",
             "links":{
                 "aboutme":{
-                    "posx": 0,
-                    "posy": 0,
-                    "width": 10,
-                    "height":10
+                    "left": 920,
+                    "top": 175,
+                    "right": 1130,
+                    "botom": 230
                 }
             }
         },
@@ -22,10 +22,10 @@
             "source":"aboutme.png",
             "links":{
                 "homepage":{
-                    "posx": 0,
-                    "posy": 0,
-                    "width": 10,
-                    "height":10
+                    "left": 510,
+                    "top": 0,
+                    "right": 630,
+                    "botom": 145
                 }
             }
         }

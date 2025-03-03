@@ -108,6 +108,7 @@ export class WaitingAnimation {
       };
   
       draw();
+      console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     }
   
     Stop() {
