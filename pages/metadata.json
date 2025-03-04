@@ -15,6 +15,12 @@
                     "top": 175,
                     "right": 1130,
                     "botom": 230
+                },
+                "blog":{
+                    "left": 1215,
+                    "top": 175,
+                    "right": 1325,
+                    "botom": 230
                 }
             }
         },
@@ -26,9 +32,184 @@
                     "top": 0,
                     "right": 630,
                     "botom": 145
+                },
+                "linkedin":{
+                    "url": "https://www.linkedin.com/in/david-daverio",
+                    "left": 790,
+                    "top": 660,
+                    "right": 995,
+                    "botom": 705
+                }
+            }
+        },
+        "blog":{
+            "source":"blog.png",
+            "links":{
+                "homepage":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_01":{
+                    "left": 210,
+                    "top": 380,
+                    "right": 820,
+                    "botom": 415
+                }
+
+            }
+        },
+        "blog_storyofthis_01":{
+            "source":"blog_storyofthis_01.png",
+            "links":{
+                "blog":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_02":{
+                    "left": 2080,
+                    "top": 1420,
+                    "right": 2244,
+                    "botom": 1535
+                }
+            }
+        },
+        "blog_storyofthis_02":{
+            "source":"blog_storyofthis_02.png",
+            "links":{
+                "blog":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_01":{
+                    "left": 0,
+                    "top": 1420,
+                    "right": 165,
+                    "botom": 1535
+                },
+                "blog_storyofthis_03":{
+                    "left": 2080,
+                    "top": 1420,
+                    "right": 2244,
+                    "botom": 1535
+                }
+            }
+        },
+        "blog_storyofthis_03":{
+            "source":"blog_storyofthis_03.png",
+            "links":{
+                "blog":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_02":{
+                    "left": 0,
+                    "top": 1420,
+                    "right": 165,
+                    "botom": 1535
+                },
+                "blog_storyofthis_04":{
+                    "left": 2080,
+                    "top": 1420,
+                    "right": 2244,
+                    "botom": 1535
+                }
+            }
+        },
+        "blog_storyofthis_04":{
+            "source":"blog_storyofthis_04.png",
+            "links":{
+                "blog":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_03":{
+                    "left": 0,
+                    "top": 1420,
+                    "right": 165,
+                    "botom": 1535
+                },
+                "blog_storyofthis_05":{
+                    "left": 2080,
+                    "top": 1420,
+                    "right": 2244,
+                    "botom": 1535
+                }
+            }
+        },
+        "blog_storyofthis_05":{
+            "source":"blog_storyofthis_05.png",
+            "links":{
+                "blog":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_04":{
+                    "left": 0,
+                    "top": 1420,
+                    "right": 165,
+                    "botom": 1535
+                },
+                "blog_storyofthis_06":{
+                    "left": 2080,
+                    "top": 1420,
+                    "right": 2244,
+                    "botom": 1535
+                }
+            }
+        },
+        "blog_storyofthis_06":{
+            "source":"blog_storyofthis_06.png",
+            "links":{
+                "blog":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_05":{
+                    "left": 0,
+                    "top": 1420,
+                    "right": 165,
+                    "botom": 1535
+                },
+                "blog_storyofthis_07":{
+                    "left": 2080,
+                    "top": 1420,
+                    "right": 2244,
+                    "botom": 1535
+                }
+            }
+        },
+        "blog_storyofthis_07":{
+            "source":"blog_storyofthis_07.png",
+            "links":{
+                "blog":{
+                    "left": 90,
+                    "top": 45,
+                    "right": 215,
+                    "botom": 170
+                },
+                "blog_storyofthis_06":{
+                    "left": 0,
+                    "top": 1420,
+                    "right": 165,
+                    "botom": 1535
                 }
             }
         }
+
 
     }
 }

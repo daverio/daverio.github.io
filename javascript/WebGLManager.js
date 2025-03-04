@@ -236,13 +236,7 @@ export class WebGLManager {
 
 
 
-  async gotoPage(duration,page){
-    this.activeButton = false;
-    this.startAnime(duration,page);
-    await this.wait(duration+50);
-    this.currentPage = page;
-    this.activeButton = true;
-  }
+  
   computeCoordTransformToGL() {
     const canvasWidth = this.canvas.width;
     const canvasHeight = this.canvas.height;
@@ -274,18 +268,33 @@ export class WebGLManager {
   onClick(event){
     if(this.activeButton)
     {
-      const rect = this.canvas.getBoundingClientRect();
-      const [x,y] = this.coordTransformFromCanvas(event.clientX,event.clientY,rect);
+      const canvasRect = this.canvas.getBoundingClientRect();
+      const [x,y] = this.coordTransformFromCanvas(event.clientX,event.clientY,canvasRect);
       console.log(x,y)
       Object.entries(this.dataSources.meta.pages[this.currentPage].links).forEach(([target,rect]) => {
         if( x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.botom)
         {
           console.log(target)
-          this.gotoPage(1000,target)
+          if(rect.hasOwnProperty("url"))
+          {
+            window.open(rect.url, "_blank");
+          }
+          else{
+            this.gotoPage(1000,target)
+          }
         }
       });
     }
   }
+
+  async gotoPage(duration,page){
+    this.activeButton = false;
+    this.startAnime(duration,page);
+    await this.wait(duration+50);
+    this.currentPage = page;
+    this.activeButton = true;
+  }
+
 
   createShader(type, source) {
     const shader = this.gl.createShader(type);

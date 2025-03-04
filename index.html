@@ -9,13 +9,22 @@
     body { margin: 0; overflow: hidden; background: black; color: white; font-family: 'Source Code Pro', monospace; }
     canvas { display: block; }
     footer {
+      pointer-events: none;
       position: fixed;
       bottom: 0;
       width: 100%;
       text-align: center;
       color: white;
-      padding: 10px 0;
-      background: rgba(0, 0, 0, 0.7);
+      padding: 0px 0;
+      background: rgba(0, 0, 0, 0.0);
+      font-family: 'Source Code Pro', monospace;
+    }
+    .footer-box {
+      display: inline-block; /* Makes the box only as wide as the text */
+      background: rgba(0, 0, 0, 0.6); /* Slight transparent effect */
+      text-align: center;
+      color: white;
+      padding: 10px 15px;
       font-family: 'Source Code Pro', monospace;
     }
   </style>
@@ -25,6 +34,8 @@
   <script type="module" src="javascript/main.js"></script>
 </body>
 <footer>
+  <div class="footer-box">
     Page under perpetual reconstruction, © 2025 David Daverio
+  </div>
 </footer>
 </html>
