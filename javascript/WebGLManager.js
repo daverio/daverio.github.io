@@ -140,11 +140,6 @@ export class WebGLManager {
     }
   }
 
-
-
-
-
-
   drawCurrent() {
     this.gl.useProgram(this.progPlotImage);
     

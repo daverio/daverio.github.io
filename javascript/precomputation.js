@@ -61,6 +61,11 @@ export async function waitForPrecomputations() {
         for (let i = 0; i < numMiss; i++){
             frame.push(frame[2*i],frame[2*i+1])
         }
+
+        for (let i = (frame.length)/2; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1)); // Random index from 0 to i
+            [frame[2*i],frame[2*i+1], frame[2*j],frame[2*j+1]] = [frame[2*j],frame[2*j+1], frame[2*i],frame[2*i+1]]; // Swap elements
+        }
     });
 
     

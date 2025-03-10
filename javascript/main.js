@@ -7,6 +7,11 @@ function wait(ms) {
 }
 
 async function main() {
+
+  const params = new URLSearchParams(window.location.search);
+  const startpage = params.get("page") || "homepage";
+  console.log(startpage)
+
   // Start Rotating Cube Animation
   const glManager = new WebGLManager('webgl-canvas');
 
@@ -16,9 +21,16 @@ async function main() {
   glManager.StopWaitingAnime();
   glManager.drawCurrent();
 
-  await glManager.gotoPage(1000,'pictureme');
-  await wait(1000)
-  await glManager.gotoPage(1000,'homepage');
+  if(startpage === "homepage")
+  {
+    await glManager.gotoPage(1500,startpage);
+  }
+  else
+  {
+    await glManager.gotoPage(1000,"pictureme");
+    await wait(500);
+    await glManager.gotoPage(1000,startpage);
+  }
  
 
 
