@@ -5,16 +5,14 @@
 export async function createRandomPixelsAsync(frameData,datasetName,dataMeta) {
     
     frameData[datasetName] = []
-    console.log(dataMeta.numPixels,dataMeta.width,dataMeta.height)
     for (let i = 0; i < dataMeta.numPixels; i++) {
-        const randomX = Math.random() * dataMeta.width * 4 - dataMeta.width*2;  // Random between -1 and 1
-        const randomY = Math.random() * dataMeta.height * 4 - dataMeta.height*2;  // Random between -1 and 1
+        const randomX = Math.random() * dataMeta.width * 2 - dataMeta.width /2 ;  // Random between -1 and 1
+        const randomY = Math.random() * dataMeta.height * 2 - dataMeta.height / 2;  // Random between -1 and 1
         frameData[datasetName].push(randomX, randomY);
     }
 }
 
 export async function extractWhitePixelsAsync(pagename,data) {
-    console.log('Starting White Pixel Extraction...');
   
     const image = await loadImage(data.meta.base_path + data.meta.pages[pagename].source);
     const imagedata = extractWhitePixelsHelper(image);
@@ -24,11 +22,8 @@ export async function extractWhitePixelsAsync(pagename,data) {
     if(data.meta.width != imagedata.width || data.meta.height != imagedata.height){
             //in the future, instead of throwing, we should transform the point coordinate here.
         const errorMessage = 'extractWhitePixelsAsync: Image has wrong dimensions!';
-        console.log(errorMessage);
         throw new Error(errorMessage);
     }
-
-    console.log('White Pixel Extraction Completed!');
 }
 
 function loadImage(src) {

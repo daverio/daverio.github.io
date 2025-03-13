@@ -60,6 +60,7 @@ export async function waitForPrecomputations() {
         const numMiss = numPixels - (frame.length/2)
         for (let i = 0; i < numMiss; i++){
             frame.push(frame[2*i],frame[2*i+1])
+            //frame.push(-3000,-3000)
         }
 
         for (let i = (frame.length)/2; i > 0; i--) {

@@ -61,8 +61,6 @@ export class WebGLManager {
         console.error(errorMessage);
         throw new Error(errorMessage);
       }
-      console.log(key)
-      console.log('frame: ',frame);
       this.buffers[key] = this.gl.createBuffer();
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[key]);
       this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(frame),this.gl.STATIC_DRAW);
@@ -151,12 +149,10 @@ export class WebGLManager {
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.current);
     const dataLocation = this.gl.getAttribLocation(this.progPlotImage, 'a_data');
-    console.log('datalocation', dataLocation)
     this.gl.enableVertexAttribArray(dataLocation);
     this.gl.vertexAttribPointer(dataLocation, 2, this.gl.FLOAT, false, 0, 0);
 
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-    console.log('numPart: ',this.dataSources.meta.numPixels)
     this.gl.drawArrays(this.gl.POINTS, 0, this.dataSources.meta.numPixels);
   }
 
@@ -207,12 +203,13 @@ export class WebGLManager {
       //this.gl.enableVertexAttribArray(locationOutput);
       //this.gl.vertexAttribPointer(locationOutput, 2, this.gl.FLOAT, false, 0, 0);
 
+      
       this.gl.beginTransformFeedback(this.gl.POINTS);
+      //gl.clear(gl.COLOR_BUFFER_BIT); 
       this.gl.drawArrays(this.gl.POINTS, 0, this.dataSources.meta.numPixels);
       this.gl.endTransformFeedback();
 
       this.gl.bindBufferBase(this.gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
-
       //this.drawCurrent();
 
       requestAnimationFrame(draw);
@@ -265,17 +262,15 @@ export class WebGLManager {
     {
       const canvasRect = this.canvas.getBoundingClientRect();
       const [x,y] = this.coordTransformFromCanvas(event.clientX,event.clientY,canvasRect);
-      console.log(x,y)
       Object.entries(this.dataSources.meta.pages[this.currentPage].links).forEach(([target,rect]) => {
         if( x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.botom)
         {
-          console.log(target)
           if(rect.hasOwnProperty("url"))
           {
             window.open(rect.url, "_blank");
           }
           else{
-            this.gotoPage(1000,target)
+            this.gotoPage(3000,target)
           }
         }
       });
@@ -284,8 +279,12 @@ export class WebGLManager {
 
   async gotoPage(duration,page){
     this.activeButton = false;
-    this.startAnime(duration,page);
-    await this.wait(duration+50);
+    this.startAnime(duration/2,"whitenoise");
+    await this.wait(duration/8);
+    this.stopAnime();
+    await this.wait(50);
+    this.startAnime(duration/2,page);
+    await this.wait(duration/2+50);
     this.currentPage = page;
     this.activeButton = true;
   }
@@ -315,8 +314,6 @@ export class WebGLManager {
       // Resize the canvas to match the window size
       this.canvas.width = displayWidth;
       this.canvas.height = displayHeight;
-      console.log('resizing canvas:',this.canvas.width,this.canvas.height)
-
       // Update the WebGL viewport
       this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
       if(flag){
