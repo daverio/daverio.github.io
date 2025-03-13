@@ -270,7 +270,7 @@ export class WebGLManager {
             window.open(rect.url, "_blank");
           }
           else{
-            this.gotoPage(3000,target)
+            this.gotoPage(1500,target)
           }
         }
       });
@@ -279,12 +279,8 @@ export class WebGLManager {
 
   async gotoPage(duration,page){
     this.activeButton = false;
-    this.startAnime(duration/2,"whitenoise");
-    await this.wait(duration/8);
-    this.stopAnime();
-    await this.wait(50);
-    this.startAnime(duration/2,page);
-    await this.wait(duration/2+50);
+    this.startAnime(duration,page);
+    await this.wait(duration+50);
     this.currentPage = page;
     this.activeButton = true;
   }
