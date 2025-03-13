@@ -10,7 +10,6 @@ async function main() {
 
   const params = new URLSearchParams(window.location.search);
   const startpage = params.get("page") || "homepage";
-  console.log(startpage)
 
   // Start Rotating Cube Animation
   const glManager = new WebGLManager('webgl-canvas');

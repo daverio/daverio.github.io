@@ -1,7 +1,6 @@
 import { extractWhitePixelsAsync,createRandomPixelsAsync } from "./ImageProcessing.js";
 
 export async function waitForPrecomputations() {
-    console.log('Starting precomputations...');
   
     // Array to Store Results
     const data = {};
@@ -17,7 +16,6 @@ export async function waitForPrecomputations() {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         data.meta = await response.json(); 
-        console.log("Loaded JSON:", data.meta);
     } catch (error) {
         console.error("Error loading JSON:", error);
     }
@@ -26,7 +24,6 @@ export async function waitForPrecomputations() {
     const pages_promises = []
 
     Object.keys(data.meta.pages).forEach((pagename) => {
-        console.log(pagename);
         const promise = extractWhitePixelsAsync(pagename,data);
         pages_promises.push(promise);
     });
@@ -68,11 +65,6 @@ export async function waitForPrecomputations() {
             [frame[2*i],frame[2*i+1], frame[2*j],frame[2*j+1]] = [frame[2*j],frame[2*j+1], frame[2*i],frame[2*i+1]]; // Swap elements
         }
     });
-
-    
-
-
-    //console.log('Precomputations completed!', results.imageData.positions.length);
     return data;
 }
   
